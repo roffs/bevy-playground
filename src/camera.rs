@@ -59,7 +59,7 @@ fn camera_orbit(
 
     if delta != Vec2::ZERO {
         cam_state.yaw -= delta.x * SENSITIVITY;
-        cam_state.pitch = (cam_state.pitch - delta.y * SENSITIVITY).clamp(PITCH_MIN, PITCH_MAX);
+        cam_state.pitch = (cam_state.pitch + delta.y * SENSITIVITY).clamp(PITCH_MIN, PITCH_MAX);
     }
 
     let Ok(player_tf) = player_q.single() else { return };

@@ -12,7 +12,7 @@ impl Plugin for LevelPlugin {
 fn spawn_ground(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
     commands.spawn((
         RigidBody::Static,
-        Collider::cylinder(20.0, 0.5),
+        Collider::cylinder(20.0, 1.0),
         Mesh3d(meshes.add(Cylinder::new(20.0, 1.0))),
         MeshMaterial3d(materials.add(Color::srgb(0.3, 0.5, 0.3))),
         Transform::from_xyz(0.0, -0.5, 0.0),

@@ -30,11 +30,11 @@ fn spawn_player(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut ma
         JumpImpulse(6.0),
         Grounded,
         RigidBody::Dynamic,
-        Collider::capsule(0.4, 0.9),
+        Collider::cylinder(0.4, 1.8),
         LockedAxes::new().lock_rotation_x().lock_rotation_y().lock_rotation_z(),
         ShapeCaster::new(
-            Collider::capsule(0.4, 0.9),
-            Vec3::new(0.0, -0.05, 0.0),
+            Collider::cylinder(0.4, 1.8),
+            Vec3::ZERO,
             Quat::IDENTITY,
             Dir3::NEG_Y,
         )

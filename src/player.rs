@@ -1,3 +1,4 @@
+use avian3d::prelude::*;
 use bevy::prelude::*;
 
 use crate::camera::CameraState;
@@ -19,6 +20,9 @@ impl Plugin for PlayerPlugin {
 fn spawn_player(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
     commands.spawn((
         Player { speed: 5.0 },
+        RigidBody::Dynamic,
+        Collider::capsule(0.4, 0.9),
+        LockedAxes::new().lock_rotation_x().lock_rotation_y().lock_rotation_z(),
         Mesh3d(meshes.add(Cylinder::new(0.4, 1.8))),
         MeshMaterial3d(materials.add(Color::srgb_u8(124, 144, 255))),
         Transform::from_xyz(0.0, 0.9, 0.0),
@@ -27,11 +31,10 @@ fn spawn_player(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut ma
 
 fn player_movement(
     keys: Res<ButtonInput<KeyCode>>,
-    time: Res<Time>,
     cam_state: Res<CameraState>,
-    mut player_q: Query<(&Player, &mut Transform)>,
+    mut player_q: Query<(&Player, &mut LinearVelocity, &mut Transform)>,
 ) {
-    let Ok((player, mut transform)) = player_q.single_mut() else { return };
+    let Ok((player, mut velocity, mut transform)) = player_q.single_mut() else { return };
 
     let yaw_rot = Quat::from_rotation_y(cam_state.yaw);
     let forward = yaw_rot * Vec3::NEG_Z;
@@ -45,9 +48,13 @@ fn player_movement(
 
     if direction.length_squared() > 0.0 {
         direction = direction.normalize();
-        transform.translation += direction * player.speed * time.delta_secs();
+        velocity.x = direction.x * player.speed;
+        velocity.z = direction.z * player.speed;
 
         let target = Transform::IDENTITY.looking_to(-direction, Vec3::Y).rotation;
-        transform.rotation = transform.rotation.slerp(target, 12.0 * time.delta_secs());
+        transform.rotation = target;
+    } else {
+        velocity.x = 0.0;
+        velocity.z = 0.0;
     }
 }

@@ -1,3 +1,4 @@
+use avian3d::prelude::*;
 use bevy::prelude::*;
 
 pub struct LevelPlugin;
@@ -10,15 +11,19 @@ impl Plugin for LevelPlugin {
 
 fn spawn_ground(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
     commands.spawn((
-        Mesh3d(meshes.add(Circle::new(20.0))),
+        RigidBody::Static,
+        Collider::cylinder(20.0, 0.5),
+        Mesh3d(meshes.add(Cylinder::new(20.0, 1.0))),
         MeshMaterial3d(materials.add(Color::srgb(0.3, 0.5, 0.3))),
-        Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)),
+        Transform::from_xyz(0.0, -0.5, 0.0),
     ));
 }
 
 fn spawn_reference_cubes(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
     for (x, z) in [(-5.0f32, -5.0f32), (5.0, -5.0), (-5.0, 5.0), (5.0, 5.0)] {
         commands.spawn((
+            RigidBody::Static,
+            Collider::cuboid(1.0, 1.0, 1.0),
             Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0))),
             MeshMaterial3d(materials.add(Color::srgb_u8(180, 120, 80))),
             Transform::from_xyz(x, 0.5, z),

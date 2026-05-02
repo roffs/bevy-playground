@@ -8,25 +8,67 @@ pub struct Player {
     pub speed: f32,
 }
 
+#[derive(Component, Default)]
+#[component(storage = "SparseSet")]
+pub struct Grounded;
+
+#[derive(Component)]
+pub struct JumpImpulse(pub f32);
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player)
-            .add_systems(Update, player_movement);
+            .add_systems(Update, (update_grounded, player_movement, player_jump).chain());
     }
 }
 
 fn spawn_player(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
     commands.spawn((
         Player { speed: 5.0 },
+        JumpImpulse(6.0),
+        Grounded,
         RigidBody::Dynamic,
         Collider::capsule(0.4, 0.9),
         LockedAxes::new().lock_rotation_x().lock_rotation_y().lock_rotation_z(),
+        ShapeCaster::new(
+            Collider::capsule(0.4, 0.9),
+            Vec3::new(0.0, -0.05, 0.0),
+            Quat::IDENTITY,
+            Dir3::NEG_Y,
+        )
+        .with_max_distance(0.2),
         Mesh3d(meshes.add(Cylinder::new(0.4, 1.8))),
         MeshMaterial3d(materials.add(Color::srgb_u8(124, 144, 255))),
         Transform::from_xyz(0.0, 0.9, 0.0),
     ));
+}
+
+fn update_grounded(
+    mut commands: Commands,
+    query: Query<(Entity, &ShapeHits), With<Player>>,
+) {
+    for (entity, hits) in &query {
+        let is_grounded = hits.iter().any(|hit| hit.normal1.dot(Vec3::Y) > 0.5);
+
+        if is_grounded {
+            commands.entity(entity).insert(Grounded);
+        } else {
+            commands.entity(entity).remove::<Grounded>();
+        }
+    }
+}
+
+fn player_jump(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut player_q: Query<(&JumpImpulse, &mut LinearVelocity, Has<Grounded>)>,
+) {
+    let Ok((impulse, mut velocity, is_grounded)) = player_q.single_mut() else { return };
+
+    if keys.just_pressed(KeyCode::Space) && is_grounded {
+        velocity.y = impulse.0;
+    }
 }
 
 fn player_movement(

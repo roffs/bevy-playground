@@ -24,7 +24,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-fn spawn_player(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
+fn spawn_player(mut commands: Commands, assets: Res<AssetServer>) {
     commands.spawn((
         Player { speed: 5.0 },
         JumpImpulse(6.0),
@@ -39,10 +39,14 @@ fn spawn_player(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut ma
             Dir3::NEG_Y,
         )
         .with_max_distance(0.2),
-        Mesh3d(meshes.add(Cylinder::new(0.4, 1.8))),
-        MeshMaterial3d(materials.add(Color::srgb_u8(124, 144, 255))),
         Transform::from_xyz(0.0, 0.9, 0.0),
-    ));
+    ))
+    .with_children(|parent| {
+        parent.spawn((
+            SceneRoot(assets.load("Y_bot.gltf#Scene0")),
+            Transform::from_xyz(0.0, -0.9, 0.0),
+        ));
+    });
 }
 
 fn update_grounded(

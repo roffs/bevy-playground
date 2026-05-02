@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 avian3d = { version = "0.6", features = ["debug-plugin"] }
-bevy = { version = "0.18.1", features = ["dynamic_linking"] }
+bevy = { version = "0.18.1", features = ["dynamic_linking", "bevy_gltf"] }
 
 
 # Enable a small amount of optimization in the dev profile.
